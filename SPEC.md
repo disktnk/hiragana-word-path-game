@@ -265,9 +265,12 @@ are specified in DESIGN.md.
 
 Use Pointer Events so mouse, pen, and touch share one interaction model.
 
-1. `pointerdown` on an unused character cell starts an active path and starts
-   the timer if necessary.
-2. Moving into an unused orthogonally adjacent character cell appends it.
+1. `pointerdown` on an unused character cell records the path start and starts
+   the timer if necessary. The path remains visually unselected until the
+   pointer moves into an unused orthogonally adjacent character cell.
+2. Moving into an unused orthogonally adjacent character cell starts the active
+   path with the recorded cell and appends the destination cell. Further moves
+   append additional cells.
 3. Moving back into the immediately previous cell removes the current tail
    cell. This is in-drag backtracking.
 4. Moving into any other cell already present in the active path is ignored.
@@ -277,7 +280,8 @@ Use Pointer Events so mouse, pen, and touch share one interaction model.
    not extended. No line is drawn outside the last selected cell. Re-entering
    the board may continue the same path.
 7. Releasing the pointer anywhere ends and submits the active path.
-8. A one-cell submission clears silently.
+8. Releasing without moving to an adjacent cell clears the recorded one-cell
+   start silently.
 9. An invalid submission of two or more cells briefly shows an error state,
    then clears.
 10. A valid submission locks immediately.
