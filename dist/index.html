@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f3f1">
+  <title>ひらがなつなぎ</title>
+  <style>:root {
+  color: #111;
+  background: #f3f3f1;
+  font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  font-synthesis: none;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; background: #f3f3f1; }
+button { font: inherit; }
+.app-shell { width: min(100% - 24px, 640px); margin: 24px auto; }
+.card { background: #fbfcff; border: 1px solid #e3e5e8; border-radius: 22px; padding: clamp(18px, 4vw, 32px); box-shadow: 0 12px 35px #2525250d; }
+.topbar, .index-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+h1, h2, p { margin: 0; }
+h1 { font-size: clamp(1.5rem, 5vw, 2rem); letter-spacing: .04em; }
+h2 { font-size: 1.25rem; }
+.muted { color: #555; }
+.timer { font-variant-numeric: tabular-nums; font-size: 1.3rem; font-weight: 700; letter-spacing: .06em; }
+.index-list { display: grid; gap: 12px; margin-top: 28px; }
+.puzzle-link { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 12px; padding: 17px 18px; border: 1px solid #c9cdd1; border-radius: 15px; background: #fff; color: #111; text-align: left; cursor: pointer; }
+.puzzle-link:hover { border-color: #555; background: #f8f9fa; }
+.puzzle-link:focus-visible, button:focus-visible, .cell:focus-visible { outline: 3px solid #1c67a8; outline-offset: 3px; }
+.puzzle-meta { display: grid; gap: 3px; }
+.puzzle-status { color: #555; font-size: .9rem; }
+.back-button { border: 0; background: none; color: #444; padding: 4px 0; cursor: pointer; text-decoration: underline; }
+.game-title { display: flex; align-items: center; gap: 14px; }
+.board-wrap { position: relative; width: min(100%, 520px); margin: 28px auto 20px; touch-action: none; user-select: none; }
+.board { display: grid; position: relative; width: 100%; aspect-ratio: 1; }
+.cell { position: relative; z-index: 2; display: grid; place-items: center; min-width: 0; min-height: 0; border: 1px solid #d9dde0; background: #fff; color: #111; font-size: clamp(1.15rem, 6vw, 2.4rem); cursor: pointer; }
+.cell.absent { display: none; }
+.cell.blocked { z-index: 1; background: #b8b8b8; cursor: not-allowed; }
+.cell.edge-top { border-top: 3px solid #444; }
+.cell.edge-right { border-right: 3px solid #444; }
+.cell.edge-bottom { border-bottom: 3px solid #444; }
+.cell.edge-left { border-left: 3px solid #444; }
+.cell.selected { background: #f4f6f8; font-weight: 700; }
+.cell.locked { color: #111; font-weight: 700; }
+.cell.hinted::after { content: ""; position: absolute; inset: 13%; border: 4px solid #9256df; border-radius: 50%; pointer-events: none; }
+.cell.endpoint::before { content: ""; position: absolute; inset: 20%; border: 3px solid currentColor; border-radius: 50%; opacity: .7; pointer-events: none; }
+.path-layer { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; overflow: visible; }
+.path-line { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 15; opacity: .74; }
+.path-line.active { stroke: #6d7781; opacity: .52; stroke-dasharray: 2 2; }
+.path-arrow { fill: #fff; opacity: .86; }
+.slot-list { display: grid; gap: 8px; margin: 0 auto 18px; width: min(100%, 520px); }
+.slot { display: flex; align-items: center; min-height: 36px; gap: 5px; }
+.slot-label { width: 28px; color: #777; font-size: .8rem; text-align: right; }
+.slot-tiles { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.tile { display: grid; place-items: center; width: 28px; height: 30px; border-radius: 7px; background: #e0e2e5; color: #222; font-weight: 700; }
+.slot.solved .tile { background: var(--slot-color); }
+.check { margin-left: 2px; font-size: 1.15rem; font-weight: 800; }
+.controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin: 22px auto 15px; width: min(100%, 520px); }
+.control { min-height: 46px; border: 1px solid #444; border-radius: 999px; background: #fff; color: #111; cursor: pointer; }
+.control:disabled { border-color: #d5d8db; background: #dfe2e5; color: #74777a; cursor: not-allowed; }
+.control.hint-active { border-color: #9256df; box-shadow: 0 0 0 3px #9256df33; }
+.message { min-height: 24px; color: #555; text-align: center; }
+.message.error { color: #a33b4e; }
+.message.success { color: #21633d; font-weight: 700; }
+.instructions { display: grid; gap: 8px; margin-top: 10px; }
+details { border: 1px solid #d9dde0; border-radius: 12px; padding: 10px 13px; color: #555; }
+summary { cursor: pointer; color: #222; font-weight: 700; }
+details p { padding-top: 9px; line-height: 1.6; font-size: .9rem; }
+.completion { margin: 9px 0 -5px; color: #21633d; text-align: center; font-weight: 700; }
+.completed .path-line { animation: pulse-path .33s ease-in-out 4 alternate; }
+@keyframes pulse-path { to { stroke-width: 20; } }
+@media (prefers-reduced-motion: reduce) { .completed .path-line { animation: none; } }
+@media (max-width: 380px) { .app-shell { width: min(100% - 14px, 640px); margin: 10px auto; } .card { padding: 15px 11px; } .controls { gap: 5px; } }
+</style>
+</head>
+<body>
+  <main id="app" class="app-shell"></main>
+  <script>window.BUNDLED_PUZZLES = [{"schemaVersion":1,"id":"0001","revision":1,"title":"テストもんだい","grid":[["た","つ","ん","ば","い"],["か","む","は","う","き"],["ー","り","#","ど","じ"],["わ","き","し","よ","く"],["ぱ","ゆ","う"]],"answers":["ぱわー","かたつむり","きゅうしょく","じどうはんばいき"],"solution":[[[4,0],[3,0],[2,0]],[[1,0],[0,0],[0,1],[1,1],[2,1]],[[3,1],[4,1],[4,2],[3,2],[3,3],[3,4]],[[2,4],[2,3],[1,3],[1,2],[0,2],[0,3],[0,4],[1,4]]]}];</script>
+  <script>(() => {
+  const puzzles = window.BUNDLED_PUZZLES || [];
+  const colors = ["#e5bd35", "#9256df", "#d85272", "#5c93dc", "#46a88e", "#e17839", "#6877c7"];
+  const equivalent = new Map([["ゃ", "や"], ["ゅ", "ゆ"], ["ょ", "よ"], ["っ", "つ"]]);
+  const segmenter = typeof Intl.Segmenter === "function" ? new Intl.Segmenter("ja", { granularity: "grapheme" }) : null;
+  const storageKey = "hiragana-word-path-game:v1";
+  const app = document.querySelector("#app");
+  let state = null;
+  let timerInterval = null;
+
+  const segment = (value) => segmenter ? [...segmenter.segment(value.normalize("NFC"))].map((part) => part.segment) : Array.from(value.normalize("NFC"));
+  const compare = (value) => segment(value).map((part) => equivalent.get(part) || part).join("");
+  const coord = (row, column) => `${row},${column}`;
+  const parseCoord = (value) => value.split(",").map(Number);
+  const isAdjacent = (first, second) => Math.abs(first[0] - second[0]) + Math.abs(first[1] - second[1]) === 1;
+  const currentPuzzle = () => puzzles.find((puzzle) => puzzle.id === state?.puzzleId);
+  const cells = (puzzle) => puzzle.grid.flatMap((row, rowIndex) => row.map((token, columnIndex) => ({ row: rowIndex, column: columnIndex, token })).filter((cell) => cell.token !== null && cell.token !== undefined));
+  const characterCells = (puzzle) => cells(puzzle).filter((cell) => cell.token !== "#");
+  const hasProgress = () => state.locked.length > 0 || state.elapsed > 0 || state.timerStarted;
+  const formatTime = (milliseconds) => { const seconds = Math.floor(milliseconds / 1000); return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`; };
+  const answerOrder = (puzzle) => puzzle.answers.map((answer, index) => ({ answer, index, length: segment(answer).length })).sort((a, b) => a.length - b.length || a.index - b.index);
+
+  function defaultState(puzzle) {
+    return { puzzleId: puzzle.id, revision: puzzle.revision, locked: [], active: [], pointerStart: null, elapsed: 0, timerStarted: false, completed: false, best: null, hint: null, message: "", messageType: "" };
+  }
+
+  function readSaved(puzzle) {
+    try {
+      const records = JSON.parse(localStorage.getItem(storageKey) || "{}");
+      const saved = records[puzzle.id];
+      if (!saved || saved.revision !== puzzle.revision || !Array.isArray(saved.locked)) return null;
+      const restored = defaultState(puzzle);
+      restored.elapsed = Number.isFinite(saved.elapsed) && saved.elapsed >= 0 ? saved.elapsed : 0;
+      restored.timerStarted = Boolean(saved.timerStarted);
+      restored.completed = Boolean(saved.completed);
+      restored.best = Number.isFinite(saved.best) ? saved.best : null;
+      restored.locked = saved.locked.filter((entry) => Number.isInteger(entry.answerIndex) && puzzle.answers[entry.answerIndex] && Array.isArray(entry.path) && entry.path.length === segment(puzzle.answers[entry.answerIndex]).length);
+      const used = new Set();
+      restored.locked = restored.locked.filter((entry) => {
+        const path = entry.path;
+        if (path.some((point) => !Array.isArray(point) || point.length !== 2 || typeof puzzle.grid[point[0]]?.[point[1]] !== "string" || puzzle.grid[point[0]][point[1]] === "#" || used.has(coord(...point)))) return false;
+        if (compare(path.map((point) => puzzle.grid[point[0]][point[1]]).join("")) !== compare(puzzle.answers[entry.answerIndex])) return false;
+        for (let i = 1; i < path.length; i += 1) if (!isAdjacent(path[i - 1], path[i])) return false;
+        path.forEach((point) => used.add(coord(...point)));
+        return true;
+      });
+      restored.completed = restored.locked.length === puzzle.answers.length;
+      return restored;
+    } catch { return null; }
+  }
+
+  function saveState() {
+    if (!state) return;
+    try {
+      const records = JSON.parse(localStorage.getItem(storageKey) || "{}");
+      records[state.puzzleId] = { revision: state.revision, locked: state.locked.map(({ answerIndex, path }) => ({ answerIndex, path })), elapsed: state.elapsed, timerStarted: state.timerStarted, completed: state.completed, best: state.best };
+      localStorage.setItem(storageKey, JSON.stringify(records));
+    } catch { /* Storage is optional for offline play. */ }
+  }
+
+  function setMessage(message, type = "") { state.message = message; state.messageType = type; }
+  function startTimer() { if (!state || state.completed || state.timerStarted) return; state.timerStarted = true; state.lastTick = Date.now(); clearInterval(timerInterval); timerInterval = setInterval(tickTimer, 250); saveState(); }
+  function tickTimer() { if (!state?.timerStarted || state.completed) return; if (document.visibilityState === "visible") { state.elapsed += Date.now() - (state.lastTick || Date.now()); state.lastTick = Date.now(); renderTimer(); } else state.lastTick = Date.now(); }
+  function stopTimer() { if (state?.timerStarted) tickTimer(); clearInterval(timerInterval); timerInterval = null; }
+  function renderTimer() { const timer = document.querySelector("#timer"); if (timer) timer.textContent = formatTime(state.elapsed); }
+  function usedCoordinates() { return new Set(state.locked.flatMap((entry) => entry.path.map((point) => coord(...point)))); }
+
+  function beginPath(point) { if (state.completed || point.token === "#" || usedCoordinates().has(coord(point.row, point.column))) return; startTimer(); state.active = [[point.row, point.column]]; state.pointerStart = null; state.hint = null; setMessage(""); render(); }
+  function extendPath(point) {
+    if (point.token === "#" || usedCoordinates().has(coord(point.row, point.column))) return;
+    if (!state.active.length && state.pointerStart) {
+      if (!isAdjacent(state.pointerStart, [point.row, point.column])) return;
+      state.active = [state.pointerStart, [point.row, point.column]];
+      state.pointerStart = null;
+      state.hint = null;
+      setMessage("");
+      render();
+      return;
+    }
+    if (!state.active.length) return;
+    const last = state.active[state.active.length - 1];
+    if (!isAdjacent(last, [point.row, point.column])) return;
+    const pointKey = coord(point.row, point.column);
+    const previousKey = coord(...state.active[state.active.length - 2] || []);
+    if (state.active.some((entry) => coord(...entry) === pointKey)) {
+      if (pointKey === previousKey) state.active.pop();
+    } else state.active.push([point.row, point.column]);
+    render();
+  }
+  function submitPath() {
+    state.pointerStart = null;
+    if (!state.active.length) return;
+    if (state.active.length === 1) { state.active = []; render(); return; }
+    const puzzle = currentPuzzle();
+    const traced = state.active.map(([row, column]) => puzzle.grid[row][column]).join("");
+    const answerIndex = puzzle.answers.findIndex((answer, index) => !state.locked.some((entry) => entry.answerIndex === index) && compare(answer) === compare(traced));
+    if (answerIndex < 0) { setMessage("そのつなぎ方は答えではありません", "error"); state.active = []; render(); window.setTimeout(() => { if (state?.messageType === "error") { setMessage(""); render(); } }, 1100); return; }
+    state.locked.push({ answerIndex, path: state.active }); state.active = []; state.hint = null; setMessage("", "");
+    if (state.locked.length === puzzle.answers.length) completePuzzle();
+    saveState(); render();
+  }
+  function completePuzzle() { tickTimer(); state.completed = true; state.timerStarted = false; stopTimer(); if (state.best === null || state.elapsed < state.best) state.best = state.elapsed; setMessage("", ""); saveState(); }
+  function undo() { if (!state.locked.length || state.completed) return; state.locked.pop(); state.hint = null; setMessage(""); saveState(); render(); }
+  function reset(replay = false) { if (!replay && hasProgress() && !window.confirm("この問題の進行状況をリセットしますか？")) return; const puzzle = currentPuzzle(); const best = state.best; state = defaultState(puzzle); state.best = best; saveState(); render(); }
+  function hint() {
+    if (state.completed) return;
+    startTimer();
+    const puzzle = currentPuzzle();
+    const solved = new Set(state.locked.map((entry) => entry.answerIndex));
+    const selected = answerOrder(puzzle).find((entry) => !solved.has(entry.index));
+    if (!selected) return;
+    if (!state.hint || state.hint.answerIndex !== selected.index) state.hint = { answerIndex: selected.index, revealed: 0 };
+    const path = puzzle.solution[selected.index];
+    const unavailable = path.slice(0, state.hint.revealed + 1).some((point) => usedCoordinates().has(coord(...point)));
+    if (unavailable) { setMessage("先に前の答えをUndoしてください", "error"); document.querySelector("#undo")?.focus(); render(); return; }
+    state.hint.revealed = Math.min(state.hint.revealed + 1, path.length); setMessage("次の文字を表示しました", ""); render();
+  }
+
+  function makePathPoints(path, puzzle) { return path.map(([row, column]) => { const cell = document.querySelector(`[data-row="${row}"][data-column="${column}"]`); return cell ? [cell.offsetLeft + cell.offsetWidth / 2, cell.offsetTop + cell.offsetHeight / 2] : null; }).filter(Boolean); }
+  function drawPath(svg, path, puzzle, color, active = false) {
+    const points = makePathPoints(path, puzzle); if (!points.length) return;
+    const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline"); polyline.setAttribute("points", points.map((point) => point.join(",")).join(" ")); polyline.setAttribute("class", `path-line${active ? " active" : ""}`); polyline.style.stroke = color; svg.append(polyline);
+    if (!active) points.slice(0, -1).forEach((point, index) => { const next = points[index + 1]; const arrow = document.createElementNS("http://www.w3.org/2000/svg", "circle"); arrow.setAttribute("cx", (point[0] * .45 + next[0] * .55)); arrow.setAttribute("cy", (point[1] * .45 + next[1] * .55)); arrow.setAttribute("r", "3"); arrow.setAttribute("class", "path-arrow"); svg.append(arrow); });
+  }
+
+  function renderBoard(puzzle) {
+    const wrap = document.createElement("div"); wrap.className = "board-wrap";
+    const board = document.createElement("div"); board.className = "board"; board.setAttribute("tabindex", "0"); board.setAttribute("role", "group"); board.setAttribute("aria-label", "ひらがなボード。矢印キーで移動、Shiftと矢印キーでつなぎます");
+    board.style.gridTemplateRows = `repeat(${puzzle.grid.length}, 1fr)`; board.style.gridTemplateColumns = "repeat(7, 1fr)";
+    const cellMap = new Map(); const lockedByCell = new Map(); state.locked.forEach((entry, order) => entry.path.forEach((point) => lockedByCell.set(coord(...point), order)));
+    const present = new Set(cells(puzzle).map((cell) => coord(cell.row, cell.column)));
+    cells(puzzle).forEach((cell) => {
+      const element = document.createElement("button"); element.className = `cell ${cell.token === "#" ? "blocked" : ""}`; element.dataset.row = cell.row; element.dataset.column = cell.column; element.style.gridRow = cell.row + 1; element.style.gridColumn = cell.column + 1; element.tabIndex = -1; element.textContent = cell.token === "#" ? "" : cell.token;
+      const edges = [[-1, 0, "edge-top"], [0, 1, "edge-right"], [1, 0, "edge-bottom"], [0, -1, "edge-left"]]; edges.forEach(([dr, dc, className]) => { if (!present.has(coord(cell.row + dr, cell.column + dc))) element.classList.add(className); });
+      const lockedOrder = lockedByCell.get(coord(cell.row, cell.column)); if (lockedOrder !== undefined) { element.classList.add("locked"); element.style.background = `${colors[state.locked[lockedOrder].answerIndex % colors.length]}99`; }
+      if (state.active.some((point) => coord(...point) === coord(cell.row, cell.column))) element.classList.add("selected");
+      if (state.hint && puzzle.solution[state.hint.answerIndex].slice(0, state.hint.revealed).some((point) => coord(...point) === coord(cell.row, cell.column))) element.classList.add("hinted");
+      const status = cell.token === "#" ? "ブロック" : lockedOrder !== undefined ? "回答済み" : "未使用"; element.setAttribute("aria-label", `${cell.token === "#" ? "ブロック" : cell.token}、${cell.row + 1}行${cell.column + 1}列、${status}`); element.disabled = cell.token === "#";
+      element.addEventListener("pointerdown", (event) => { if (event.button !== undefined && event.button !== 0) return; event.preventDefault(); if (state.completed || cell.token === "#" || usedCoordinates().has(coord(cell.row, cell.column))) return; startTimer(); state.pointerStart = [cell.row, cell.column]; state.active = []; element.setPointerCapture?.(event.pointerId); });
+      element.addEventListener("pointerenter", () => { if (board.hasPointerCapture?.(window.activePointerId)) extendPath(cell); });
+      element.addEventListener("pointerup", (event) => { if (board.hasPointerCapture?.(event.pointerId)) { board.releasePointerCapture(event.pointerId); submitPath(); } });
+      cellMap.set(coord(cell.row, cell.column), element); board.append(element);
+    });
+    board.addEventListener("pointermove", (event) => { window.activePointerId = event.pointerId; const target = document.elementFromPoint(event.clientX, event.clientY)?.closest?.(".cell"); if (target && target.dataset.row !== undefined) extendPath({ row: Number(target.dataset.row), column: Number(target.dataset.column), token: target.textContent }); });
+    board.addEventListener("pointercancel", () => { state.active = []; state.pointerStart = null; render(); });
+    board.addEventListener("keydown", (event) => handleKeyboard(event, board, puzzle));
+    board.addEventListener("keyup", (event) => { if (event.key === "Shift" && state.active.length) { event.preventDefault(); submitPath(); } });
+    board.addEventListener("focus", (event) => { if (event.target !== board) return; board.tabIndex = -1; const first = characterCells(puzzle)[0]; cellMap.get(coord(first.row, first.column))?.focus(); }, true);
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.classList.add("path-layer"); svg.setAttribute("aria-hidden", "true");
+    state.locked.forEach((entry) => drawPath(svg, entry.path, puzzle, colors[entry.answerIndex % colors.length])); if (state.active.length) drawPath(svg, state.active, puzzle, "#6d7781", true);
+    wrap.append(board, svg); return wrap;
+  }
+
+  function handleKeyboard(event, board, puzzle) {
+    const focused = document.activeElement?.closest?.(".cell"); if (!focused) return;
+    const row = Number(focused.dataset.row); const column = Number(focused.dataset.column); const moves = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }; const move = moves[event.key];
+    if (move) { event.preventDefault(); const next = [row + move[0], column + move[1]]; let target = document.querySelector(`[data-row="${next[0]}"][data-column="${next[1]}"]`); if (!target || target.disabled) return; if (event.shiftKey) { const point = { row: next[0], column: next[1], token: target.textContent }; if (!state.active.length) beginPath({ row, column, token: focused.textContent }); extendPath(point); target = document.querySelector(`[data-row="${next[0]}"][data-column="${next[1]}"]`); } target?.focus(); return; }
+    if (event.key === "Backspace") { event.preventDefault(); if (state.active.length) { state.active.pop(); render(); } else { const entry = state.locked.find((locked) => locked.path.some((point) => point[0] === row && point[1] === column)); if (entry) undo(); } }
+    if (event.key === "Escape") { state.active = []; render(); }
+  }
+
+  function renderSlots(puzzle) { const list = document.createElement("div"); list.className = "slot-list"; answerOrder(puzzle).forEach(({ answer, index }) => { const entry = state.locked.find((locked) => locked.answerIndex === index); const slot = document.createElement("div"); slot.className = `slot ${entry ? "solved" : ""}`; slot.style.setProperty("--slot-color", colors[index % colors.length]); slot.innerHTML = `<span class="slot-label">${segment(answer).length}</span><span class="slot-tiles"></span>${entry ? "<span class=\"check\" aria-label=\"正解\">✓</span>" : ""}`; const tiles = slot.querySelector(".slot-tiles"); segment(answer).forEach((letter) => { const tile = document.createElement("span"); tile.className = "tile"; tile.textContent = entry ? letter : ""; tiles.append(tile); }); list.append(slot); }); return list; }
+
+  function renderIndex() { stopTimer(); app.innerHTML = `<section class="card"><div class="index-heading"><div><p class="muted">WORD PATH PUZZLE</p><h1>ひらがなつなぎ</h1></div><span class="muted">${puzzles.length}問</span></div><div class="index-list"></div></section>`; const list = app.querySelector(".index-list"); puzzles.forEach((puzzle) => { const saved = readSaved(puzzle); const status = saved?.completed ? `クリア　${formatTime(saved.best ?? saved.elapsed)}` : saved?.locked?.length ? `プレイ中${saved.best ? `　ベスト ${formatTime(saved.best)}` : ""}` : saved?.best ? `未プレイ　ベスト ${formatTime(saved.best)}` : "未プレイ"; const link = document.createElement("button"); link.className = "puzzle-link"; link.innerHTML = `<span class="puzzle-meta"><strong>問題 ${puzzle.id}</strong><span>${puzzle.title || ""}</span></span><span class="puzzle-status">${status}</span>`; link.addEventListener("click", () => openPuzzle(puzzle.id)); list.append(link); }); }
+  function openPuzzle(id) { const puzzle = puzzles.find((item) => item.id === id); if (!puzzle) return renderIndex(); state = readSaved(puzzle) || defaultState(puzzle); if (state.timerStarted && !state.completed) { state.lastTick = Date.now(); clearInterval(timerInterval); timerInterval = setInterval(tickTimer, 250); } render(); }
+  function render() { const puzzle = currentPuzzle(); if (!puzzle) return renderIndex(); const focusedCell = document.activeElement?.closest?.(".cell"); const focusCoordinate = focusedCell ? coord(Number(focusedCell.dataset.row), Number(focusedCell.dataset.column)) : null; app.innerHTML = ""; const card = document.createElement("section"); card.className = `card ${state.completed ? "completed" : ""}`; card.innerHTML = `<div class="topbar"><div class="game-title"><button class="back-button" id="back">← 戻る</button><h1>問題 ${puzzle.id}</h1></div><time class="timer" id="timer" aria-label="経過時間">${formatTime(state.elapsed)}</time></div>`; card.append(renderBoard(puzzle), renderSlots(puzzle)); const controls = document.createElement("div"); controls.className = "controls"; controls.innerHTML = `<button class="control" id="undo" ${state.locked.length && !state.completed ? "" : "disabled"}>Undo</button><button class="control ${state.hint ? "hint-active" : ""}" id="hint" ${state.completed ? "disabled" : ""}>Hint</button><button class="control" id="reset" ${hasProgress() || state.completed ? "" : "disabled"}>${state.completed ? "Replay" : "Reset"}</button>`; card.append(controls); const message = document.createElement("p"); message.className = `message ${state.messageType}`; message.setAttribute("aria-live", "polite"); message.textContent = state.message; card.append(message); const instructions = document.createElement("div"); instructions.className = "instructions"; instructions.innerHTML = `<details open><summary>遊び方</summary><p>となり合う文字を順番につないで、答えの言葉を見つけましょう。斜めには進めません。すべての文字を一度ずつ使うとクリアです。</p></details><details><summary>キーボード操作</summary><p>Tabでボードへ移動し、矢印キーで移動します。Shift＋矢印キーで文字をつなぎ、Shiftを離すと決定します。Backspaceで戻り、Escで取り消せます。</p></details>`; card.append(instructions); app.append(card); if (focusCoordinate) document.querySelector(`[data-row="${focusCoordinate.split(",")[0]}"][data-column="${focusCoordinate.split(",")[1]}"]`)?.focus(); document.querySelector("#back").addEventListener("click", () => { location.hash = "#/"; }); document.querySelector("#undo").addEventListener("click", undo); document.querySelector("#hint").addEventListener("click", hint); document.querySelector("#reset").addEventListener("click", () => reset(state.completed)); renderTimer(); }
+
+  document.addEventListener("visibilitychange", () => { if (state) { if (document.visibilityState === "hidden") { tickTimer(); saveState(); } else if (state.timerStarted) state.lastTick = Date.now(); } });
+  document.addEventListener("pointermove", (event) => { if (!state?.pointerStart && !state?.active.length) return; const target = document.elementFromPoint(event.clientX, event.clientY)?.closest?.(".cell"); if (target && target.dataset.row !== undefined) extendPath({ row: Number(target.dataset.row), column: Number(target.dataset.column), token: target.textContent }); });
+  document.addEventListener("pointerup", () => { if (state?.pointerStart || state?.active.length) submitPath(); });
+  document.addEventListener("pointercancel", () => { if (state?.pointerStart || state?.active.length) { state.active = []; state.pointerStart = null; render(); } });
+  document.addEventListener("keyup", (event) => { if (event.key === "Shift" && state?.active.length) submitPath(); });
+  window.addEventListener("hashchange", route); window.addEventListener("resize", () => { if (state) render(); });
+  function route() { const match = location.hash.match(/^#\/puzzles\/(\d+)$/); if (match) openPuzzle(match[1].padStart(4, "0")); else renderIndex(); }
+  route();
+})();
+</script>
+</body>
+</html>
