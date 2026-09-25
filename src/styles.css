@@ -32,14 +32,16 @@ h2 { font-size: 1.25rem; }
 .cell.edge-right { border-right: 3px solid #444; }
 .cell.edge-bottom { border-bottom: 3px solid #444; }
 .cell.edge-left { border-left: 3px solid #444; }
-.cell.selected { background: #f4f6f8; font-weight: 700; }
-.cell.locked { color: #111; font-weight: 700; }
-.cell.hinted::after { content: ""; position: absolute; inset: 13%; border: 4px solid #9256df; border-radius: 50%; pointer-events: none; }
-.cell.endpoint::before { content: ""; position: absolute; inset: 20%; border: 3px solid currentColor; border-radius: 50%; opacity: .7; pointer-events: none; }
-.path-layer { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; overflow: visible; }
+.cell.selected { background: transparent; font-weight: 700; }
+.cell.locked { background: transparent !important; color: #111; font-weight: 700; }
+.cell.locked::after { content: ""; position: absolute; inset: 0; z-index: 1; background: var(--path-color); opacity: .28; pointer-events: none; }
+.cell-label { position: relative; z-index: 12; }
+.cell.hinted { box-shadow: inset 0 0 0 4px #9256df; }
+.path-layer { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: visible; }
+.arrow-layer { z-index: 4; }
 .path-line { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 15; opacity: .74; }
 .path-line.active { stroke: #6d7781; opacity: .52; stroke-dasharray: 2 2; }
-.path-arrow { fill: #fff; opacity: .86; }
+.path-arrow { fill: none; stroke: #111; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: .98; }
 .slot-list { display: grid; gap: 8px; margin: 0 auto 18px; width: min(100%, 520px); }
 .slot { display: flex; align-items: center; min-height: 36px; gap: 5px; }
 .slot-label { width: 28px; color: #777; font-size: .8rem; text-align: right; }

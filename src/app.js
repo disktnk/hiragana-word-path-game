@@ -120,7 +120,14 @@
   function drawPath(svg, path, puzzle, color, active = false) {
     const points = makePathPoints(path, puzzle); if (!points.length) return;
     const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline"); polyline.setAttribute("points", points.map((point) => point.join(",")).join(" ")); polyline.setAttribute("class", `path-line${active ? " active" : ""}`); polyline.style.stroke = color; svg.append(polyline);
-    if (!active) points.slice(0, -1).forEach((point, index) => { const next = points[index + 1]; const arrow = document.createElementNS("http://www.w3.org/2000/svg", "circle"); arrow.setAttribute("cx", (point[0] * .45 + next[0] * .55)); arrow.setAttribute("cy", (point[1] * .45 + next[1] * .55)); arrow.setAttribute("r", "3"); arrow.setAttribute("class", "path-arrow"); svg.append(arrow); });
+  }
+  function drawArrows(svg, path, puzzle) {
+    const points = makePathPoints(path, puzzle); if (points.length < 2) return;
+    points.slice(0, -1).forEach((point, index) => {
+        const next = points[index + 1];
+        const dx = next[0] - point[0]; const dy = next[1] - point[1]; const distance = Math.hypot(dx, dy); const ux = dx / distance; const uy = dy / distance; const px = -uy; const py = ux; const centerX = point[0] * .5 + next[0] * .5; const centerY = point[1] * .5 + next[1] * .5; const tip = [centerX + ux * 7, centerY + uy * 7]; const base = [centerX - ux * 5, centerY - uy * 5];
+        const arrow = document.createElementNS("http://www.w3.org/2000/svg", "path"); arrow.setAttribute("d", `M ${base[0] + px * 5} ${base[1] + py * 5} L ${tip[0]} ${tip[1]} L ${base[0] - px * 5} ${base[1] - py * 5}`); arrow.setAttribute("class", "path-arrow"); svg.append(arrow);
+    });
   }
 
   function renderBoard(puzzle) {
@@ -130,9 +137,9 @@
     const cellMap = new Map(); const lockedByCell = new Map(); state.locked.forEach((entry, order) => entry.path.forEach((point) => lockedByCell.set(coord(...point), order)));
     const present = new Set(cells(puzzle).map((cell) => coord(cell.row, cell.column)));
     cells(puzzle).forEach((cell) => {
-      const element = document.createElement("button"); element.className = `cell ${cell.token === "#" ? "blocked" : ""}`; element.dataset.row = cell.row; element.dataset.column = cell.column; element.style.gridRow = cell.row + 1; element.style.gridColumn = cell.column + 1; element.tabIndex = -1; element.textContent = cell.token === "#" ? "" : cell.token;
+      const element = document.createElement("button"); element.className = `cell ${cell.token === "#" ? "blocked" : ""}`; element.dataset.row = cell.row; element.dataset.column = cell.column; element.style.gridRow = cell.row + 1; element.style.gridColumn = cell.column + 1; element.tabIndex = -1; if (cell.token !== "#") { const label = document.createElement("span"); label.className = "cell-label"; label.textContent = cell.token; element.append(label); }
       const edges = [[-1, 0, "edge-top"], [0, 1, "edge-right"], [1, 0, "edge-bottom"], [0, -1, "edge-left"]]; edges.forEach(([dr, dc, className]) => { if (!present.has(coord(cell.row + dr, cell.column + dc))) element.classList.add(className); });
-      const lockedOrder = lockedByCell.get(coord(cell.row, cell.column)); if (lockedOrder !== undefined) { element.classList.add("locked"); element.style.background = `${colors[state.locked[lockedOrder].answerIndex % colors.length]}99`; }
+      const lockedOrder = lockedByCell.get(coord(cell.row, cell.column)); if (lockedOrder !== undefined) { element.classList.add("locked"); element.style.setProperty("--path-color", colors[state.locked[lockedOrder].answerIndex % colors.length]); }
       if (state.active.some((point) => coord(...point) === coord(cell.row, cell.column))) element.classList.add("selected");
       if (state.hint && puzzle.solution[state.hint.answerIndex].slice(0, state.hint.revealed).some((point) => coord(...point) === coord(cell.row, cell.column))) element.classList.add("hinted");
       const status = cell.token === "#" ? "ブロック" : lockedOrder !== undefined ? "回答済み" : "未使用"; element.setAttribute("aria-label", `${cell.token === "#" ? "ブロック" : cell.token}、${cell.row + 1}行${cell.column + 1}列、${status}`); element.disabled = cell.token === "#";
@@ -146,9 +153,10 @@
     board.addEventListener("keydown", (event) => handleKeyboard(event, board, puzzle));
     board.addEventListener("keyup", (event) => { if (event.key === "Shift" && state.active.length) { event.preventDefault(); submitPath(); } });
     board.addEventListener("focus", (event) => { if (event.target !== board) return; board.tabIndex = -1; const first = characterCells(puzzle)[0]; cellMap.get(coord(first.row, first.column))?.focus(); }, true);
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.classList.add("path-layer"); svg.setAttribute("aria-hidden", "true");
-    state.locked.forEach((entry) => drawPath(svg, entry.path, puzzle, colors[entry.answerIndex % colors.length])); if (state.active.length) drawPath(svg, state.active, puzzle, "#6d7781", true);
-    wrap.append(board, svg); return wrap;
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.classList.add("path-layer"); svg.setAttribute("aria-hidden", "true"); const arrowSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); arrowSvg.classList.add("path-layer", "arrow-layer"); arrowSvg.setAttribute("aria-hidden", "true");
+    wrap.append(board, svg, arrowSvg);
+    window.requestAnimationFrame(() => { if (!document.body.contains(wrap)) return; state.locked.forEach((entry) => { drawPath(svg, entry.path, puzzle, colors[entry.answerIndex % colors.length]); drawArrows(arrowSvg, entry.path, puzzle); }); if (state.active.length) { drawPath(svg, state.active, puzzle, "#6d7781", true); drawArrows(arrowSvg, state.active, puzzle); } });
+    return wrap;
   }
 
   function handleKeyboard(event, board, puzzle) {
