@@ -258,8 +258,10 @@ are specified in DESIGN.md.
 - A locked path uses that word's color on both the board and its solved slot.
 - The UI MUST NOT rely on color alone; selected cells and connecting segments
   must also provide shape or contrast cues.
-- SVG overlay rendering is recommended for path segments and endpoints, but is
-  not mandatory.
+- SVG overlay rendering is recommended for path segments and directional
+  chevrons, but is not mandatory. Direction chevrons MUST remain visibly above
+  the cell borders, while path bands and character labels retain clear
+  contrast.
 
 ## 9. Pointer and touch interaction
 

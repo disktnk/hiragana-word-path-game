@@ -92,8 +92,8 @@ implemented with an SVG overlay or an equivalent DOM/CSS layer.
 - Direction is visible through small chevrons or arrow markers inside the
   path. Direction markers are supplementary and must not replace accessible
   text or state cues.
-- The first and last cells have visibly distinct circular endpoint treatment.
-- A solved endpoint displays a check mark or equivalent completion indicator.
+- Direction is shown with black `>`-shaped chevrons placed above the cell
+  borders. The design does not require circular start or end markers.
 - Selected cells remain visually identifiable even when a path crosses a
   multi-cell area.
 - Locked paths are visually stronger than an active path.
