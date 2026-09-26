@@ -9,3 +9,7 @@ npm run build     # Build dist/index.html
 ```
 
 Open the generated `dist/index.html` directly in a browser to play.
+
+## License
+
+Licensed under the [Apache License, Version 2.0](LICENSE).
