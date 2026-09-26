@@ -25,11 +25,11 @@ h2 { font-size: 1.25rem; }
 .back-button { border: 0; background: none; color: #444; padding: 4px 0; cursor: pointer; text-decoration: underline; }
 .game-title { display: flex; align-items: center; gap: 14px; }
 .board-wrap { position: relative; width: min(100%, 520px); margin: 28px auto 20px; touch-action: none; user-select: none; }
-.board { display: grid; position: relative; width: 100%; aspect-ratio: 1; }
+.board { display: grid; position: relative; width: 100%; aspect-ratio: 1 / 1; margin: 0 auto; }
 .board:focus, .board:focus-visible { outline: none; box-shadow: none; }
 .cell { position: relative; z-index: 2; display: grid; place-items: center; min-width: 0; min-height: 0; border: 1px solid #d9dde0; background: #fff; color: #111; font-size: clamp(1.15rem, 6vw, 2.4rem); cursor: pointer; }
 .cell.absent { display: none; }
-.cell.blocked { z-index: 1; background: #b8b8b8; cursor: not-allowed; }
+.cell.blocked { z-index: 1; background: #b8b8b8; cursor: not-allowed; pointer-events: none; }
 .cell.edge-top { border-top: 3px solid #444; }
 .cell.edge-right { border-right: 3px solid #444; }
 .cell.edge-bottom { border-bottom: 3px solid #444; }
@@ -44,11 +44,11 @@ h2 { font-size: 1.25rem; }
 .path-line { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 15; opacity: .74; }
 .path-line.active { stroke: #6d7781; opacity: .52; stroke-dasharray: 2 2; }
 .path-arrow { fill: none; stroke: #111; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: .98; }
-.slot-list { display: grid; gap: 8px; margin: 0 auto 18px; width: min(100%, 520px); }
-.slot { display: flex; align-items: center; min-height: 36px; gap: 5px; }
-.slot-label { width: 28px; color: #777; font-size: .8rem; text-align: right; }
-.slot-tiles { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
-.tile { display: grid; place-items: center; width: 28px; height: 30px; border-radius: 7px; background: #e0e2e5; color: #222; font-weight: 700; }
+.slot-list { display: grid; gap: 2px; margin: 0 auto 18px; width: min(100%, 520px); }
+.slot { display: flex; align-items: center; min-height: 28px; gap: 5px; }
+.slot-label { display: none; }
+.slot-tiles { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; }
+.tile { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 3px; background: #e0e2e5; color: #222; font-weight: 700; }
 .slot.solved .tile { background: var(--slot-color); }
 .check { margin-left: 2px; font-size: 1.15rem; font-weight: 800; }
 .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin: 22px auto 15px; width: min(100%, 520px); }

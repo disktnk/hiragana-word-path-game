@@ -4,7 +4,7 @@ import path from "node:path";
 const root = path.resolve(new URL("..", import.meta.url).pathname);
 const puzzleDirectory = path.join(root, "puzzles");
 const hiraPattern = /^[ぁ-ゔー]+$/u;
-const unsupportedPattern = /[ぁぃぅぇぉゎゕゖっ]/u;
+const unsupportedPattern = /[ゎゕゖ]/u;
 const equivalent = new Map([["ゃ", "や"], ["ゅ", "ゆ"], ["ょ", "よ"], ["っ", "つ"]]);
 
 export function segment(value) {

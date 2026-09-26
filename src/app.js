@@ -133,7 +133,7 @@
   function renderBoard(puzzle) {
     const wrap = document.createElement("div"); wrap.className = "board-wrap";
     const board = document.createElement("div"); board.className = "board"; board.setAttribute("tabindex", "0"); board.setAttribute("role", "group"); board.setAttribute("aria-label", "ひらがなボード。矢印キーで移動、Shiftと矢印キーでつなぎます");
-    board.style.gridTemplateRows = `repeat(${puzzle.grid.length}, 1fr)`; board.style.gridTemplateColumns = "repeat(7, 1fr)";
+    const columnCount = Math.max(...puzzle.grid.map((row) => row.length)); board.style.aspectRatio = `${columnCount} / ${puzzle.grid.length}`; board.style.gridTemplateRows = `repeat(${puzzle.grid.length}, 1fr)`; board.style.gridTemplateColumns = `repeat(${columnCount}, 1fr)`;
     const cellMap = new Map(); const lockedByCell = new Map(); state.locked.forEach((entry, order) => entry.path.forEach((point) => lockedByCell.set(coord(...point), order)));
     const present = new Set(cells(puzzle).map((cell) => coord(cell.row, cell.column)));
     cells(puzzle).forEach((cell) => {

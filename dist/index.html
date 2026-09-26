@@ -32,11 +32,11 @@ h2 { font-size: 1.25rem; }
 .back-button { border: 0; background: none; color: #444; padding: 4px 0; cursor: pointer; text-decoration: underline; }
 .game-title { display: flex; align-items: center; gap: 14px; }
 .board-wrap { position: relative; width: min(100%, 520px); margin: 28px auto 20px; touch-action: none; user-select: none; }
-.board { display: grid; position: relative; width: 100%; aspect-ratio: 1; }
+.board { display: grid; position: relative; width: 100%; aspect-ratio: 1 / 1; margin: 0 auto; }
 .board:focus, .board:focus-visible { outline: none; box-shadow: none; }
 .cell { position: relative; z-index: 2; display: grid; place-items: center; min-width: 0; min-height: 0; border: 1px solid #d9dde0; background: #fff; color: #111; font-size: clamp(1.15rem, 6vw, 2.4rem); cursor: pointer; }
 .cell.absent { display: none; }
-.cell.blocked { z-index: 1; background: #b8b8b8; cursor: not-allowed; }
+.cell.blocked { z-index: 1; background: #b8b8b8; cursor: not-allowed; pointer-events: none; }
 .cell.edge-top { border-top: 3px solid #444; }
 .cell.edge-right { border-right: 3px solid #444; }
 .cell.edge-bottom { border-bottom: 3px solid #444; }
@@ -51,11 +51,11 @@ h2 { font-size: 1.25rem; }
 .path-line { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 15; opacity: .74; }
 .path-line.active { stroke: #6d7781; opacity: .52; stroke-dasharray: 2 2; }
 .path-arrow { fill: none; stroke: #111; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: .98; }
-.slot-list { display: grid; gap: 8px; margin: 0 auto 18px; width: min(100%, 520px); }
-.slot { display: flex; align-items: center; min-height: 36px; gap: 5px; }
-.slot-label { width: 28px; color: #777; font-size: .8rem; text-align: right; }
-.slot-tiles { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
-.tile { display: grid; place-items: center; width: 28px; height: 30px; border-radius: 7px; background: #e0e2e5; color: #222; font-weight: 700; }
+.slot-list { display: grid; gap: 2px; margin: 0 auto 18px; width: min(100%, 520px); }
+.slot { display: flex; align-items: center; min-height: 28px; gap: 5px; }
+.slot-label { display: none; }
+.slot-tiles { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; }
+.tile { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 3px; background: #e0e2e5; color: #222; font-weight: 700; }
 .slot.solved .tile { background: var(--slot-color); }
 .check { margin-left: 2px; font-size: 1.15rem; font-weight: 800; }
 .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin: 22px auto 15px; width: min(100%, 520px); }
@@ -78,7 +78,7 @@ details p { padding-top: 9px; line-height: 1.6; font-size: .9rem; }
 </head>
 <body>
   <main id="app" class="app-shell"></main>
-  <script>window.BUNDLED_PUZZLES = [{"schemaVersion":1,"id":"0001","revision":1,"title":"テストもんだい","grid":[["た","つ","ん","ば","い"],["か","む","は","う","き"],["ー","り","#","ど","じ"],["わ","き","し","よ","く"],["ぱ","ゆ","う"]],"answers":["ぱわー","かたつむり","きゅうしょく","じどうはんばいき"],"solution":[[[4,0],[3,0],[2,0]],[[1,0],[0,0],[0,1],[1,1],[2,1]],[[3,1],[4,1],[4,2],[3,2],[3,3],[3,4]],[[2,4],[2,3],[1,3],[1,2],[0,2],[0,3],[0,4],[1,4]]]}];</script>
+  <script>window.BUNDLED_PUZZLES = [{"schemaVersion":1,"id":"0001","revision":1,"title":"テストもんだい","grid":[["た","つ","ん","ば","い"],["か","む","は","う","き"],["ー","り","#","ど","じ"],["わ","き","し","よ","く"],["ぱ","ゆ","う"]],"answers":["ぱわー","かたつむり","きゅうしょく","じどうはんばいき"],"solution":[[[4,0],[3,0],[2,0]],[[1,0],[0,0],[0,1],[1,1],[2,1]],[[3,1],[4,1],[4,2],[3,2],[3,3],[3,4]],[[2,4],[2,3],[1,3],[1,2],[0,2],[0,3],[0,4],[1,4]]]},{"schemaVersion":1,"id":"0002","revision":1,"title":"ツールボックス","grid":[["も","ば","#","#","#","な","え"],["#","い","ま","ふ","ぉ","じ","#"],["#","る","い","か","ー","ー","#"],["#","ば","く","す","く","ど","#"],["#","っ","ろ","ん","ん","り","#"],["#","て","ふ","ぉ","く","り","#"],["ー","り","#","#","#","っ","く"]],"answers":["くりっく","ふぉーかす","まいくろふぉん","えなじーどりんく","もばいるばってりー"],"solution":[[[5,4],[5,5],[6,5],[6,6]],[[1,3],[1,4],[2,4],[2,3],[3,3]],[[1,2],[2,2],[3,2],[4,2],[5,2],[5,3],[4,3]],[[0,6],[0,5],[1,5],[2,5],[3,5],[4,5],[4,4],[3,4]],[[0,0],[0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[6,0]]]}];</script>
   <script>(() => {
   const puzzles = window.BUNDLED_PUZZLES || [];
   const colors = ["#e5bd35", "#9256df", "#d85272", "#5c93dc", "#46a88e", "#e17839", "#6877c7"];
@@ -214,7 +214,7 @@ details p { padding-top: 9px; line-height: 1.6; font-size: .9rem; }
   function renderBoard(puzzle) {
     const wrap = document.createElement("div"); wrap.className = "board-wrap";
     const board = document.createElement("div"); board.className = "board"; board.setAttribute("tabindex", "0"); board.setAttribute("role", "group"); board.setAttribute("aria-label", "ひらがなボード。矢印キーで移動、Shiftと矢印キーでつなぎます");
-    board.style.gridTemplateRows = `repeat(${puzzle.grid.length}, 1fr)`; board.style.gridTemplateColumns = "repeat(7, 1fr)";
+    const columnCount = Math.max(...puzzle.grid.map((row) => row.length)); board.style.aspectRatio = `${columnCount} / ${puzzle.grid.length}`; board.style.gridTemplateRows = `repeat(${puzzle.grid.length}, 1fr)`; board.style.gridTemplateColumns = `repeat(${columnCount}, 1fr)`;
     const cellMap = new Map(); const lockedByCell = new Map(); state.locked.forEach((entry, order) => entry.path.forEach((point) => lockedByCell.set(coord(...point), order)));
     const present = new Set(cells(puzzle).map((cell) => coord(cell.row, cell.column)));
     cells(puzzle).forEach((cell) => {
