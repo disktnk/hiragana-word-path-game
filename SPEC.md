@@ -210,9 +210,10 @@ Consequences:
 ### 7.4 Allowed input repertoire
 
 Puzzle data MUST use hiragana plus `ー`. Kanji, katakana, Latin letters,
-digits, spaces, and punctuation are invalid. Small `ぁぃぅぇぉゎ`, `ゕ`, `ゖ`,
-and iteration marks are unsupported in schema version 1 and MUST be rejected by
-the validator. They may be introduced by a later normalization version.
+digits, spaces, and punctuation are invalid. Small `ぁぃぅぇぉ` are supported
+in schema version 1 and each occupies one grapheme cell. Small `ゎ`, `ゕ`, `ゖ`,
+and iteration marks remain unsupported and MUST be rejected by the validator.
+They may be introduced by a later normalization version.
 
 ## 8. Board representation and rendering
 
@@ -230,6 +231,8 @@ the validator. They may be introduced by a later normalization version.
 
 - Character cells are square and display one centered character.
 - Blocked cells use a clearly gray fill and are visibly unplayable.
+- Blocked cells must not receive pointer interaction; pointer tracing must pass
+  over them without starting or extending a path.
 - The outer boundary of the union of character and blocked cells is drawn with
   a thick line.
 - For an irregular board, the thick boundary follows the actual cell shape,
@@ -330,6 +333,8 @@ for every individual path after a character cell has been focused.
 - Slots are sorted by ascending grapheme count.
 - Equal-length slots retain their original order in the JSON `answers` array.
 - Before discovery, a slot shows one blank tile per character cell.
+- The blank tile count communicates the word length; no separate numeric length
+  label is required.
 - After discovery, it shows the canonical answer string from JSON, not the
   normalized board spelling.
 - Slot order and color assignment remain stable throughout a play session.

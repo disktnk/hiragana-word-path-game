@@ -24,7 +24,8 @@ SPEC.md.
   controls.
 - The layout is optimized for a narrow mobile viewport and should remain
   usable on wider desktop viewports without making the board excessively large.
-- Horizontal controls are arranged in two equal-width columns.
+- Controls are arranged in three equal-width columns for `Undo`, `Hint`, and
+  `Reset`.
 - Instruction groups appear below the controls as bordered, rounded accordion
   cards. The groups are:
   - How to play
@@ -69,6 +70,8 @@ Use a system font stack such as `system-ui, -apple-system, "Segoe UI",
   the surrounding board geometry.
 - The board must preserve square cells while scaling down to the available
   viewport width.
+- The board's overall aspect ratio follows its grid dimensions, so rectangular
+  puzzles remain rectangular while each individual cell stays square.
 - Pointer interaction must preserve the board's rounded outer shape and must
   not introduce browser selection or scrolling during tracing.
 
@@ -104,8 +107,10 @@ when viewed in grayscale or by users who cannot distinguish the path colors.
 
 ## 6. Word slots
 
-- Slots appear directly beneath the board with a compact vertical gap.
-- An unsolved slot is represented by one small rounded gray tile per grapheme.
+- Slots appear directly beneath the board with a compact 2px vertical gap.
+- An unsolved slot is represented by one small square gray tile per grapheme;
+  the tile count communicates the answer length without a separate numeric
+  label. Tile gaps are 2px both horizontally and vertically.
 - A solved slot displays the canonical answer string from JSON, one colored
   tile per grapheme, followed by a check mark.
 - The slot uses the same color as its locked board path.
