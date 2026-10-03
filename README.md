@@ -1,6 +1,10 @@
 A static offline game where players connect adjacent hiragana cells by dragging to find hidden words.
 Puzzle JSON files are embedded into `dist/index.html` at build time.
 
+## Demo
+
+[Play the demo](https://disktnk.github.io/hiragana-word-path-game/)
+
 ## Commands
 
 ```bash
